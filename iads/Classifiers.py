@@ -15,6 +15,7 @@ import pandas as pd
 import copy
 import math
 import sys
+import random
 
 # ---------------------------
 class Classifier:
@@ -1059,3 +1060,93 @@ class ClassifierArbreNumerique(Classifier):
             Cette fonction modifie GTree par effet de bord
         """
         self.racine.to_graph(GTree)
+
+def tirage(VX, m, r = False):
+    """
+    Arguments: 
+        VX : ensemble des indices des exemples de la BA X
+        m  : taille du vecteur d'indices à rendre
+        r  : booleen indiquant si il y a remise ou pas dans le tirage
+    """
+    return [random.choice(VX) for i in range(m)] if r else random.sample(VX,m)
+
+def echantillonLS(LS, m, r):
+    """
+    Arguments: 
+        LS : couple de 2 np.arrays (X,Y)
+        m  : taille du vecteur d'indices à rendre
+        r  : booleen indiquant si il y a remise ou pas dans le tirage
+    """
+    X,Y = LS[0], LS[1]
+    VX = tirage([i for i in range(len(X))], m, r)
+    return X[VX], Y[VX]
+
+class ClassifierBaggingTree(Classifier):
+    def __init__(self, B, perc, seuil, r):
+        """ Constructeur
+            Argument:
+                - intput_dimension (int) : dimension de la description des exemples
+                - epsilon (float) : paramètre de l'algorithme (cf. explications précédentes)
+                - LNoms : Liste des noms de dimensions (si connues)
+            Hypothèse : input_dimension > 0
+        """
+        self.B = B
+        self.perc = perc
+        self.r = r
+        self.seuil = seuil
+        
+    def train(self, LabeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        self.treeSet = set(ClassifierArbreNumerique(LabeledSet[0][1], self.seuil) for i in range(self.B))
+        taille_ech = round(len(LabeledSet[0])*self.perc)
+        for tree in self.treeSet:
+            X, Y = echantillonLS(LabeledSet, taille_ech, self.r)
+            tree.train(X,Y)
+    
+    def predict(self, x):
+        """ x (array): une description d'exemple
+            rend la prediction sur x             
+        """
+        somme=0
+        for tree in self.treeSet:
+            somme += tree.predict(x)
+        return +1 if somme>=0 else -1
+
+class ClassifierRandomForest(Classifier):
+    def __init__(self, B, perc, seuil, r):
+        """ Constructeur
+            Argument:
+                - intput_dimension (int) : dimension de la description des exemples
+                - epsilon (float) : paramètre de l'algorithme (cf. explications précédentes)
+                - LNoms : Liste des noms de dimensions (si connues)
+            Hypothèse : input_dimension > 0
+        """
+        self.B = B
+        self.perc = perc
+        self.r = r
+        self.seuil = seuil
+        
+    def train(self, LabeledSet):
+        """ Permet d'entrainer le modele sur l'ensemble donné
+            desc_set: ndarray avec des descriptions
+            label_set: ndarray avec les labels correspondants
+            Hypothèse: desc_set et label_set ont le même nombre de lignes
+        """        
+        self.treeSet = set(ClassifierArbreNumerique(LabeledSet[0][1], self.seuil) for i in range(self.B))
+        taille_ech = round(len(LabeledSet[0])*self.perc)
+        for tree in self.treeSet:
+            X, Y = echantillonLS(LabeledSet, taille_ech, self.r)
+            tree.train(X,Y)
+    
+    def predict(self, x):
+        """ x (array): une description d'exemple
+            rend la prediction sur x             
+        """
+        somme=0
+        for tree in self.treeSet:
+            somme += tree.predict(x)
+        return +1 if somme>=0 else -1
