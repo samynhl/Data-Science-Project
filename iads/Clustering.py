@@ -12,11 +12,12 @@ Année: LU3IN026 - semestre 2 - 2021-2022, Sorbonne Université
 # Import de packages externes
 import numpy as np
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import copy
 import math
 import sys
 import random
+from itertools import combinations
 import scipy.cluster.hierarchy
 from scipy.spatial.distance import cdist
 
@@ -152,3 +153,58 @@ def clustering_hierarchique_average(df, dist_func='euclidean',
                                     verbose=False, dendrogramme=False):
     return clustering_hierarchique_linkage('average', df, dist_func,
                                           verbose, dendrogramme)
+
+def dist_vect(v1, v2):
+    return dist_euclidienne(v1,v2)
+
+def inertie_cluster(Ens):
+    c = centroide(Ens)
+    return np.sum([dist_vect(v,c)**2 for v in np.array(Ens)])
+
+def init_kmeans(K,Ens):
+    return np.array(pd.DataFrame(Ens).sample(n=K))
+
+def plus_proche(Exe,Centres):
+    return np.argmin([dist_vect(Exe,c) for c in Centres])
+
+def affecte_cluster(Base,Centres):
+    U = {i : [] for i in range(len(Centres))}
+    for i in range(len(Base)):
+        U[plus_proche(np.array(Base)[i],Centres)].append(i)
+    return U
+
+def nouveaux_centroides(Base,U):
+    X = np.array(Base)
+    result = []
+    for k,desc in U.items():
+        result.append(np.mean([X[i] for i in desc], axis=0))
+    return np.array(result)
+
+def inertie_globale(Base, U):
+    X = np.array(Base)
+    return sum([inertie_cluster([X[i] for i in desc]) for desc in U.values()])
+
+def kmoyennes(K, Base, epsilon, iter_max):
+    Centres = init_kmeans(K,Base)
+    U = affecte_cluster(Base,Centres)
+    for i in range(iter_max):
+        inertie1 = inertie_globale(Base,U)
+        Centres = nouveaux_centroides(Base,U)
+        U = affecte_cluster(Base,Centres)
+        diff = round(inertie1-inertie_globale(Base,U),4)
+        print('Iteration {} Inertie : {} Difference : {}'.format(i+1,round(inertie_globale(Base,U),4),diff))
+        if diff<epsilon: break
+    return Centres, U
+
+def affiche_resultat(Base,Centres,Affect):
+    colors = ['g', 'b', 'y','c', 'm']
+    plt.scatter(Centres[:,0],Centres[:,1],color='r',marker='x')
+    for v in Affect.values():
+        c = random.choice(colors)
+        for i in v:
+            plt.scatter(Base.iloc[i,0],Base.iloc[i,1],color=c)
+    
+def dunn_index(Centres):
+    L = combinations([i for i in range(len(Centres))],2)
+    dist = [dist_centroides(Centres[i],Centres[j]) for (i,j) in L]
+    return round(min(dist)/max(dist),2)
