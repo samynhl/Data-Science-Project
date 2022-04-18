@@ -14,6 +14,8 @@ Année: LU3IN026 - semestre 2 - 2021-2022, Sorbonne Université
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import math
+import seaborn as sns
 
 # ------------------------ 
 def plot2DSet(desc,labels):    
@@ -218,3 +220,29 @@ def PCA(X, affichage):
         plt.scatter(Xr[Y==1,0],Xr[Y==1,1])
         plt.legend(np.arange(10))
     return Xr
+
+def viewData(data, kde=True):
+    """
+    visualisation d'un pandas.dataframe sous la forme d'histogramme (avec uu gaussian kernel densiy estimate si demandé
+    et intéressant)
+    Arguments:
+    data {pandas.dataFrame} -- le pandas.dataframe à visualiser
+    Keyword Arguments:
+    kde {bool} -- demande de l'affichage du gaussian kdf (default: {True})
+    """
+    x = 4
+    y = math.ceil(len(data.keys()) / x)
+    plt.figure(figsize=(x * 4, y * 2))
+    for i, k in enumerate(data.keys()):
+        ax = plt.subplot(x, y, i + 1, xticklabels=[])
+        ax.set_title(k)
+        dd = sns.histplot(data[k], kde=kde and len(data[k].unique()) > 5,ax=ax)
+        dd.set_title("")
+        
+def normalisation(df):
+    result = df.copy()
+    for feature_name in df.columns:
+        max_value = df[feature_name].max()
+        min_value = df[feature_name].min()
+        result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
+    return result
