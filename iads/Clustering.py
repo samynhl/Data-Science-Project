@@ -35,14 +35,14 @@ def dist_euclidienne(x,y):
 def dist_manhattan(x,y):
     return sum(abs(val1-val2) for val1, val2 in zip(x,y))
 
-def dist_vect(metric,x,y):
+def dist_vect(x,y,metric='euclidienne'):
     return dist_euclidienne(x,y) if metric=='euclidienne' else dist_manhattan(x,y)
 
 def centroide(X):
     return np.mean(X,axis=0)
 
 def dist_centroides(X1,X2):
-    return dist_vect('euclidienne',centroide(X1), centroide(X2))
+    return dist_vect(centroide(X1), centroide(X2))
 
 def initialise(df):
     return {i:[i] for i in range(len(df))}
@@ -154,9 +154,6 @@ def clustering_hierarchique_average(df, dist_func='euclidean',
     return clustering_hierarchique_linkage('average', df, dist_func,
                                           verbose, dendrogramme)
 
-def dist_vect(v1, v2):
-    return dist_euclidienne(v1,v2)
-
 def inertie_cluster(Ens):
     c = centroide(Ens)
     return np.sum([dist_vect(v,c)**2 for v in np.array(Ens)])
@@ -197,10 +194,10 @@ def kmoyennes(K, Base, epsilon, iter_max):
     return Centres, U
 
 def affiche_resultat(Base,Centres,Affect):
-    colors = ['g', 'b', 'y','c', 'm']
+    colors = ['g', 'b', 'y','c', 'm','r','k']
     plt.scatter(Centres[:,0],Centres[:,1],color='r',marker='x')
     for v in Affect.values():
-        c = random.choice(colors)
+        c = np.random.choice(colors)
         for i in v:
             plt.scatter(Base.iloc[i,0],Base.iloc[i,1],color=c)
     

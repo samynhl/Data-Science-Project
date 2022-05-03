@@ -194,7 +194,7 @@ def crossval(X, Y, n_iterations, iteration):
     return Xapp, Yapp, Xtest, Ytest
 
 
-def PCA(X, affichage):
+def PCA(X, affichage=False):
     # calcul des vecteurs propres
     A = X.T @ X
     lam, V = np.linalg.eig(A)

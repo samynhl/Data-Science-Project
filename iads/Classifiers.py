@@ -29,7 +29,7 @@ class Classifier:
                 - intput_dimension (int) : dimension de la description des exemples
             Hypothèse : input_dimension > 0
         """
-        raise NotImplementedError("Please Implement this method")
+        #raise NotImplementedError("Please Implement this method")
         
     def train(self, desc_set, label_set):
         """ Permet d'entrainer le modele sur l'ensemble donné
@@ -37,19 +37,19 @@ class Classifier:
             label_set: ndarray avec les labels correspondants
             Hypothèse: desc_set et label_set ont le même nombre de lignes
         """        
-        raise NotImplementedError("Please Implement this method")
+        #raise NotImplementedError("Please Implement this method")
     
     def score(self,x):
         """ rend le score de prédiction sur x (valeur réelle)
             x: une description
         """
-        raise NotImplementedError("Please Implement this method")
+        #raise NotImplementedError("Please Implement this method")
     
     def predict(self, x):
         """ rend la prediction sur x (soit -1 ou soit +1)
             x: une description
         """
-        raise NotImplementedError("Please Implement this method")
+        #raise NotImplementedError("Please Implement this method")
 
     def accuracy(self, desc_set, label_set):
         """ Permet de calculer la qualité du système sur un dataset donné
