@@ -240,7 +240,6 @@ def viewData(data, kde=True):
         dd.set_title("")
         
 def normalisation(df):
-    result = df.copy()
     for feature_name in df.columns:
         max_value = df[feature_name].max()
         min_value = df[feature_name].min()
