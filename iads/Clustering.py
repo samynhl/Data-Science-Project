@@ -196,8 +196,10 @@ def kmoyennes(K, Base, epsilon, iter_max):
 def affiche_resultat(Base,Centres,Affect):
     colors = ['r','g','y','c','m','k']
     plt.scatter(Centres[:,0],Centres[:,1],color='r',marker='x')
+    s = 0
     for v in Affect.values():
-        c = np.random.choice(colors)
+        c = colors[s%len(colors)]
+        s +=1
         for i in v:
             plt.scatter(Base.iloc[i,0],Base.iloc[i,1],color=c)
     
