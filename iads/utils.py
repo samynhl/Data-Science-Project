@@ -16,6 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import math
 import seaborn as sns
+import time
 
 # ------------------------ 
 def plot2DSet(desc,labels):    
@@ -245,3 +246,44 @@ def normalisation(df):
         min_value = df[feature_name].min()
         result[feature_name] = (df[feature_name] - min_value) / (max_value - min_value)
     return result
+
+def treat_outliers(d,c):
+    '''
+    Traite les valeurs aberrantes
+    Arguments: d - DataFrame
+               c - chaine nom de colonne
+    retourne dans d la colonne c sans valeurs aberrantes
+    '''
+    # IQR
+    Q1 = np.percentile(d[c], 25,interpolation = 'midpoint')
+    Q2 = np.percentile(d[c], 50,interpolation = 'midpoint')
+    Q3 = np.percentile(d[c], 75,interpolation = 'midpoint')
+    IQR = Q3 - Q1
+
+    # Upper bound
+    upper = np.where(d[c] >= (Q3+1.5*IQR))
+    # Lower bound
+    lower = np.where(d[c] <= (Q1-1.5*IQR))
+
+    d[c] = np.where(d[c] <(Q1-1.5*IQR), Q2,d[c])
+    d[c] = np.where(d[c] >(Q3+1.5*IQR), Q2,d[c])
+    
+def train_cv(model, X, Y, niter=10):
+    # Entrainement du modèle perceptron multiclasse avec l'algorithme k-ppv et k = 3
+    index = np.random.permutation(len(X))
+    Xm, Ym  = X[index], Y[index]
+    niter = 10
+    perf_train, perf_test = [], []
+    tic= time.time()
+    for i in range(niter):
+        Xapp,Yapp,Xtest,Ytest = crossval(Xm, Ym, niter, i)
+        model.train(Xapp, Yapp)
+        perf_train.append(round(model.accuracy(Xapp, Yapp),2))
+        perf_test.append(round(model.accuracy(Xtest, Ytest),2))
+        print("Kfold {} : train {}  -  test {}".format(i, perf_train[i], perf_test[i]))
+    toc= time.time()
+    print("---")
+    print("Moyenne train set: {}".format(round(np.mean(perf_train),2)))
+    print("Moyenne test  set: {}".format(round(np.mean(perf_test),2)))
+    print(f"Résultat en {(toc-tic):.2} secondes")
+    print("---")
